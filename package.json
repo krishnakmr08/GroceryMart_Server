@@ -1,0 +1,17 @@
+{
+  "name": "grocerymart",
+  "version": "1.0.0",
+  "description": "Backend API for a quick commerce grocery delivery application",
+  "license": "ISC",
+  "author": "krishna kumar",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "fastify": "^5.6.2",
+    "mongoose": "^9.0.1"
+  }
+}
