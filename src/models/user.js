@@ -25,7 +25,7 @@ const customerSchema = new mongoose.Schema({
   },
 });
 
-// deliveryPartner schema
+// DeliveryPartner Schema
 
 const deliveryPartnerSchema = new mongoose.Schema({
   ...userSchema.obj,
@@ -44,7 +44,7 @@ const deliveryPartnerSchema = new mongoose.Schema({
   },
 });
 
-// Admin schema
+// Admin Schema
 
 const adminSchema = new mongoose.Schema({
   ...userSchema.obj,
@@ -52,6 +52,7 @@ const adminSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { type: String, enum: ["Admin"], default: "Admin" },
 });
+
 
 export const Customer = mongoose.model("Customer", customerSchema);
 export const DeliveryPartner = mongoose.model(
