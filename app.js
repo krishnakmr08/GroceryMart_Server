@@ -1,54 +1,53 @@
 import "dotenv/config";
-import Fastify from "fastify";
-import connectDB from "./src/config/connect.js";
+import { connectDB } from "./src/config/connect.js";
+import fastify from "fastify";
 import { PORT } from "./src/config/config.js";
 import fastifySocketIO from "fastify-socket.io";
 import { registerRoutes } from "./src/routes/index.js";
-
-const fastify = Fastify({ logger: true });
+import { admin, buildAdminRouter } from "./src/config/setup.js";
 
 const start = async () => {
-  try {
-    await connectDB(process.env.MONGO_URI);
+  
+  await connectDB(process.env.MONGO_URI);
+  const app = fastify();
 
+  app.register(fastifySocketIO, {
+    cors: {
+      origin: "*",
+    },
+    pingInterval: 10000,
+    pingTimeout: 5000,
+    transports: ["websocket"],
+  });
 
-    fastify.register(fastifySocketIO, {
-      cors: {
-        origin: "*",
-      },
-      pingInterval: 10000,
-      pingTimeout: 5000,
-      transports: ["websocket"],
-    });
+  await registerRoutes(app);
 
-    await registerRoutes(fastify);
+  await buildAdminRouter(app);
 
-    fastify.ready().then(() => {
-      fastify.io.on("connection", (socket) => {
-        fastify.log.info("User connected:");
+  app.listen({ port: PORT, host: "0.0.0.0" }, (err, address) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(
+        `server  is running on http://localhost:${PORT}${admin.options.rootPath}`
+      );
+    }
+  });
 
-        socket.on("joinRoom", (orderId) => {
-          socket.join(orderId);
-          fastify.log.info("User joined");
-        });
+  app.ready().then(() => {
+    app.io.on("connection", (socket) => {
+      console.log(" a User connected ✅");
 
-        socket.on("disconnect", () => {
-          fastify.log.info("User disconnected");
-        });
+      socket.on("joinRoom", (orderId) => {
+        socket.join(orderId);
+        console.log(`🔴 User joined room ${orderId}`);
+      });
+
+      socket.on("disconnect", () => {
+        console.log("user Disconnected ❌");
       });
     });
-
-    fastify.listen({ port: PORT, host: "0.0.0.0" }, (err, address) => {
-      if (err) {
-        fastify.log.error(err);
-      } else {
-        console.log(`Server is running on ${address}`);
-      }
-    });
-  } catch (error) {
-    fastify.log.error(error);
-    process.exit(1);
-  }
+  });
 };
 
 start();
